@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pro Environmental Engineering Quiz</title>
+    <style>
+        :root { --primary: #27ae60; --secondary: #2c3e50; --bg: #f0f3f1; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); display: flex; justify-content: center; padding: 20px; }
+        .quiz-container { background: white; padding: 40px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); max-width: 650px; width: 100%; }
+        .progress-bar { height: 8px; background: #eee; border-radius: 4px; margin-bottom: 20px; overflow: hidden; }
+        #progress { height: 100%; background: var(--primary); width: 0%; transition: 0.4s; }
+        h1 { color: var(--secondary); text-align: center; margin-bottom: 30px; }
+        .question { display: none; }
+        .question.active { display: block; }
+        .option { background: #f8f9fa; margin: 12px 0; padding: 18px; border-radius: 10px; cursor: pointer; border: 2px solid #e9ecef; transition: all 0.2s; }
+        .option:hover { border-color: #bdc3c7; background: #f1f3f5; }
+        .option.correct { background: #d4edda; border-color: #28a745; color: #155724; }
+        .option.wrong { background: #f8d7da; border-color: #dc3545; color: #721c24; }
+        .feedback { margin-top: 15px; padding: 15px; border-radius: 8px; background: #eef2f7; font-size: 0.95em; display: none; line-height: 1.5; }
+        .btn { display: block; width: 100%; padding: 15px; background: var(--secondary); color: white; border: none; border-radius: 10px; cursor: pointer; font-size: 16px; margin-top: 25px; font-weight: 600; }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        #score-screen { text-align: center; display: none; }
+    </style>
+</head>
+<body>
+
+<div class="quiz-container">
+    <div class="progress-bar"><div id="progress"></div></div>
+    <h1>Environmental Engineering: Advanced Test</h1>
+    
+    <div id="quiz-box"></div>
+    <button id="next-btn" class="btn" disabled onclick="nextQuestion()">Next Question</button>
+
+    <div id="score-screen">
+        <h2>Challenge Complete!</h2>
+        <p style="font-size: 1.5em; margin: 20px 0;" id="final-score"></p>
+        <button class="btn" style="background: var(--primary);" onclick="location.reload()">Re-attempt Quiz</button>
+    </div>
+</div>
+
+<script>
+    const quizData = [
+        {
+            q: "A city population grows 100k, 120k, 160k in 3 decades. Using Geometric Increase, what is the next projection?",
+            o: ["192,000", "202,000", "210,000", "225,000"],
+            a: 1,
+            r: "Geometric growth rates are 20% and 33.3%. The geometric mean r = sqrt(0.2 * 0.333) ≈ 0.258. Next pop = 160k * 1.258 ≈ 202k."
+        },
+        {
+            q: "Find Carbonate Hardness if TH = 250 mg/L and Total Alkalinity = 180 mg/L (as CaCO3).",
+            o: ["250 mg/L", "180 mg/L", "70 mg/L", "430 mg/L"],
+            a: 1,
+            r: "Carbonate hardness is numerically equal to the Alkalinity or Total Hardness, whichever is less."
+        },
+        {
+            q: "The Logistic Curve method assumes the population growth rate is proportional to:",
+            o: ["Time elapsed", "Current population only", "The product of population and remaining capacity", "Constant increase"],
+            a: 2,
+            r: "It follows dP/dt = kP(Ps - P), where Ps is saturation population."
+        },
+        {
+            q: "High Nitrate concentrations (> 45 mg/L) in infants causes:",
+            o: ["Fluorosis", "Methemoglobinemia", "Minamata disease", "Typhoid"],
+            a: 1,
+            r: "Commonly known as Blue Baby Syndrome, it reduces oxygen-carrying capacity in the blood."
+        },
+        {
+            q: "Design periods for Water Treatment Plants and Pumping Mains are typically:",
+            o: ["15 yrs and 30 yrs", "30 yrs and 15 yrs", "50 yrs and 100 yrs", "10 yrs and 20 yrs"],
+            a: 0,
+            r: "Treatment units are easily expanded (15 yrs), while buried mains are meant for longer use (30 yrs)."
+        },
+        {
+            q: "If pH increases from 6 to 9, the H+ ion concentration decreases by:",
+            o: ["3 times", "30 times", "100 times", "1000 times"],
+            a: 3,
+            r: "pH is logarithmic. A change of 3 units = 10^3 = 1000 times change."
+        },
+        {
+            q: "Which indicator is used in EDTA titration for Total Hardness?",
+            o: ["Methyl orange", "Phenolphthalein", "Erichrome Black T", "Starch"],
+            a: 2,
+            r: "EBT changes from wine-red to blue at the endpoint."
+        },
+        {
+            q: "Freeman Formula fire demand for P = 50,000 is:",
+            o: ["22,720 L/min", "15,910 L/min", "31,820 L/min", "45,440 L/min"],
+            a: 0,
+            r: "Q = 1136(P/5 + 10). With P=50, Q = 1136(20) = 22,720 L/min."
+        },
+        {
+            q: "Hardness of 20 mg/L Ca2+ ions as CaCO3 equivalent is:",
+            o: ["20 mg/L", "40 mg/L", "50 mg/L", "100 mg/L"],
+            a: 2,
+            r: "Hardness = Conc * (Eq Wt CaCO3 / Eq Wt Ca) = 20 * (50/20) = 50 mg/L."
+        },
+        {
+            q: "Permanent hardness is primarily caused by:",
+            o: ["Carbonates of Ca/Mg", "Chlorides and Sulfates of Ca/Mg", "Dissolved CO2", "Pathogenic bacteria"],
+            a: 1,
+            r: "These salts cannot be removed by boiling and require chemical treatment."
+        }
+    ];
+
+    let currentQ = 0;
+    let score = 0;
+
+    function loadQuiz() {
+        const box = document.getElementById('quiz-box');
+        quizData.forEach((data, i) => {
+            let div = document.createElement('div');
+            div.className = `question ${i === 0 ? 'active' : ''}`;
+            div.innerHTML = `<h3>${data.q}</h3><div class="options"></div><div class="feedback"></div>`;
+            const optBox = div.querySelector('.options');
+            data.o.forEach((opt, oi) => {
+                let oDiv = document.createElement('div');
+                oDiv.className = 'option';
+                oDiv.innerText = opt;
+                oDiv.onclick = () => select(oDiv, i, oi);
+                optBox.appendChild(oDiv);
+            });
+            box.appendChild(div);
+        });
+        updateProgress();
+    }
+
+    function select(el, qi, oi) {
+        const data = quizData[qi];
+        const opts = document.querySelectorAll('.question.active .option');
+        const feed = document.querySelectorAll('.feedback')[qi];
+        
+        opts.forEach(o => o.style.pointerEvents = 'none');
+        if(oi === data.a) {
+            el.classList.add('correct');
+            score++;
+        } else {
+            el.classList.add('wrong');
+            opts[data.a].classList.add('correct');
+        }
+        feed.innerText = "Rationale: " + data.r;
+        feed.style.display = 'block';
+        document.getElementById('next-btn').disabled = false;
+    }
+
+    function nextQuestion() {
+        const qs = document.querySelectorAll('.question');
+        qs[currentQ].classList.remove('active');
+        currentQ++;
+        if(currentQ < quizData.length) {
+            qs[currentQ].classList.add('active');
+            document.getElementById('next-btn').disabled = true;
+            updateProgress();
+        } else {
+            showScore();
+        }
+    }
+
+    function updateProgress() {
+        document.getElementById('progress').style.width = ((currentQ / quizData.length) * 100) + "%";
+    }
+
+    function showScore() {
+        document.getElementById('quiz-box').style.display = 'none';
+        document.getElementById('next-btn').style.display = 'none';
+        document.getElementById('progress').parentElement.style.display = 'none';
+        document.getElementById('score-screen').style.display = 'block';
+        document.getElementById('final-score').innerText = `${score} / ${quizData.length}`;
+    }
+
+    loadQuiz();
+</script>
+</body>
+</html>
